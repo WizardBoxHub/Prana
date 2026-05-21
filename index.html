@@ -236,6 +236,15 @@ canvas { display: block; margin-bottom: 20px; }
     max-width: 320px;
     padding: 16px 0;
     font-size: 12px;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+  }
+
+  .ctrl input[type=range] {
+    width: 80px;
+    height: 2px;
   }
 }
 </style>
@@ -330,25 +339,29 @@ function draw(prog) {
   const { phase, local } = getPhase(t);
   let dot;
 
+  const padX = W * 0.1, padY = H * 0.18;
+
   if (mode === 'line') {
-    const pad = 40, cy = H / 2;
+    const pad = padX, cy = H / 2;
     ctx.beginPath(); ctx.moveTo(pad, cy); ctx.lineTo(W-pad, cy); ctx.stroke();
     [pad, W-pad].forEach(x => { ctx.beginPath(); ctx.arc(x,cy,4,0,Math.PI*2); ctx.fillStyle=lc; ctx.fill(); });
     dot = phase === 'inhale' ? pt({x:pad,y:cy},{x:W-pad,y:cy},local) : pt({x:W-pad,y:cy},{x:pad,y:cy},local);
 
   } else if (mode === 'triangle') {
-    const top={x:W/2,y:24}, bl={x:40,y:H-36}, br={x:W-40,y:H-36};
+    const top={x:W/2,y:padY}, bl={x:padX,y:H-padY}, br={x:W-padX,y:H-padY};
     ctx.beginPath(); ctx.moveTo(bl.x,bl.y); ctx.lineTo(top.x,top.y); ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y); ctx.stroke();
     dot = phase==='inhale' ? pt(bl,top,local) : phase==='hold' ? pt(top,br,local) : pt(br,bl,local);
 
   } else {
-    const s=130, cx=W/2, cy=H/2;
-    const tl={x:cx-s/2,y:cy-s/2}, tr={x:cx+s/2,y:cy-s/2}, br={x:cx+s/2,y:cy+s/2}, bl={x:cx-s/2,y:cy+s/2};
+    const size = Math.min(W, H) * 0.65;
+    const cx=W/2, cy=H/2;
+    const tl={x:cx-size/2,y:cy-size/2}, tr={x:cx+size/2,y:cy-size/2}, br={x:cx+size/2,y:cy+size/2}, bl={x:cx-size/2,y:cy+size/2};
     ctx.beginPath(); ctx.moveTo(bl.x,bl.y); ctx.lineTo(tl.x,tl.y); ctx.lineTo(tr.x,tr.y); ctx.lineTo(br.x,br.y); ctx.lineTo(bl.x,bl.y); ctx.stroke();
     dot = phase==='inhale' ? pt(bl,tl,local) : phase==='hold' ? pt(tl,tr,local) : phase==='exhale' ? pt(tr,br,local) : pt(br,bl,local);
   }
 
-  ctx.beginPath(); ctx.arc(dot.x, dot.y, 12, 0, Math.PI*2);
+  const dotR = Math.max(8, W * 0.03);
+  ctx.beginPath(); ctx.arc(dot.x, dot.y, dotR, 0, Math.PI*2);
   ctx.fillStyle = dotC[mode]; ctx.fill();
 }
 
@@ -396,10 +409,10 @@ function renderSliders() {
     .filter(d => p.includes(d.key))
     .map(d => `
       <div class="ctrl">
-        <label>${d.label}</label>
-        <input type="range" min="1" max="16" step="1" value="${times[d.key]}"
-          oninput="times['${d.key}']=+this.value;this.nextElementSibling.textContent=this.value+'s'">
         <span class="val">${times[d.key]}s</span>
+        <input type="range" min="1" max="16" step="1" value="${times[d.key]}"
+          oninput="times['${d.key}']=+this.value;this.previousElementSibling.textContent=this.value+'s'">
+        <label>${d.label}</label>
       </div>`).join('');
 }
 

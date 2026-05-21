@@ -8,6 +8,12 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  background-color: #5F6A30;
+  min-height: 100%;
+  transition: background-color 1.8s ease;
+}
+
 body {
   background: #5F6A30;
   color: #FBFFB8;
@@ -452,6 +458,7 @@ function frame(ts) {
   const { phase } = getPhase(prog * total());
   phaseLabel.textContent = names[phase];
   document.body.style.backgroundColor = bgC[phase];
+  document.documentElement.style.backgroundColor = bgC[phase];
   draw(prog);
   if (playing) animId = requestAnimationFrame(frame);
 }
@@ -472,6 +479,7 @@ function togglePlay() {
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';
+    document.documentElement.style.backgroundColor = '#5F6A30';
     phaseLabel.textContent = '';
     draw(0);
   }

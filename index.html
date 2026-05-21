@@ -18,6 +18,11 @@ body {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  /* Radial light source from top-center, dark vignette at edges */
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(120,140,50,0.6) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 100%);
+  background-color: #5F6A30;
 }
 
 h1 {
@@ -27,6 +32,7 @@ h1 {
   opacity: 0.5;
   font-weight: 300;
   margin-bottom: 40px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .mode-select {
@@ -36,19 +42,38 @@ h1 {
 }
 
 .mode-card {
-  border: 0.5px solid rgba(251,255,184,0.2);
+  border: none;
   border-radius: 12px;
   padding: 18px 16px 14px;
   cursor: pointer;
   text-align: center;
-  transition: all 0.3s;
-  background: rgba(251,255,184,0.04);
+  transition: all 0.25s ease;
   width: 130px;
+  /* Raised card: dark shadow below, light highlight on top edge */
+  background: linear-gradient(160deg, rgba(251,255,184,0.10) 0%, rgba(251,255,184,0.03) 100%);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.12) inset,   /* top highlight */
+    0 -1px 0 rgba(0,0,0,0.2) inset,          /* bottom inner shadow */
+    0 4px 12px rgba(0,0,0,0.3),              /* drop shadow */
+    0 1px 3px rgba(0,0,0,0.2);
+}
+
+.mode-card:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.08) inset,
+    0 -1px 0 rgba(0,0,0,0.3) inset,
+    0 2px 6px rgba(0,0,0,0.25),
+    0 1px 2px rgba(0,0,0,0.2);
 }
 
 .mode-card.active {
-  border-color: rgba(251,255,184,0.6);
-  background: rgba(251,255,184,0.1);
+  background: linear-gradient(160deg, rgba(251,255,184,0.16) 0%, rgba(251,255,184,0.06) 100%);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.22) inset,
+    0 -1px 0 rgba(0,0,0,0.25) inset,
+    0 6px 18px rgba(0,0,0,0.35),
+    0 2px 5px rgba(0,0,0,0.2);
 }
 
 .mode-card svg { display: block; margin: 0 auto 10px; overflow: visible; }
@@ -58,6 +83,7 @@ h1 {
   color: #FBFFB8;
   letter-spacing: 1px;
   margin-bottom: 4px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
 .mc-desc {
@@ -98,26 +124,44 @@ h1 {
 .ctrl input[type=range] {
   width: 90px;
   -webkit-appearance: none;
-  height: 1px;
-  background: rgba(251,255,184,0.25);
+  height: 2px;
+  background: rgba(251,255,184,0.15);
   outline: none;
   cursor: pointer;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4) inset, 0 1px 0 rgba(251,255,184,0.08);
 }
 
 .ctrl input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 13px; height: 13px;
+  width: 16px; height: 16px;
   border-radius: 50%;
-  background: #FBFFB8;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,220,1) 0%, #FBFFB8 50%, rgba(200,205,100,1) 100%);
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.3) inset;
 }
 
 .ctrl .val {
   font-size: 18px;
   color: rgba(251,255,184,0.8);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
-canvas { display: block; margin-bottom: 20px; }
+/* Canvas wrapper for depth */
+.canvas-wrap {
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.22) 100%);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.3) inset,
+    0 8px 32px rgba(0,0,0,0.4),
+    0 2px 8px rgba(0,0,0,0.25);
+}
+
+canvas { display: block; }
 
 .phase-label {
   font-size: 22px;
@@ -129,26 +173,50 @@ canvas { display: block; margin-bottom: 20px; }
   text-align: center;
   opacity: 0.9;
   margin-bottom: 36px;
+  text-shadow: 0 0 20px rgba(251,255,184,0.4), 0 2px 8px rgba(0,0,0,0.5);
 }
 
 .playbtn {
   padding: 12px 52px;
-  border: 0.5px solid rgba(251,255,184,0.4);
-  border-radius: 2px;
-  background: transparent;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 11px;
   font-family: 'Fraunces', serif;
-  color: rgba(251,255,184,0.8);
+  color: rgba(251,255,184,0.85);
   letter-spacing: 4px;
   text-transform: uppercase;
-  transition: opacity 0.4s, background 0.2s;
+  transition: opacity 0.4s, transform 0.1s, box-shadow 0.1s;
   opacity: 1;
   display: block;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Raised button with gradient */
+  background: linear-gradient(180deg, rgba(251,255,184,0.12) 0%, rgba(251,255,184,0.04) 100%);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.18) inset,
+    0 -1px 0 rgba(0,0,0,0.3) inset,
+    0 4px 16px rgba(0,0,0,0.35),
+    0 1px 4px rgba(0,0,0,0.2);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
 }
 
-.playbtn.active { opacity: 0.3; }
-.playbtn:hover { opacity: 1 !important; background: rgba(251,255,184,0.08); }
+.playbtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.10) inset,
+    0 -1px 0 rgba(0,0,0,0.4) inset,
+    0 2px 8px rgba(0,0,0,0.3),
+    0 1px 2px rgba(0,0,0,0.2);
+}
+
+.playbtn.active { opacity: 0.5; }
+.playbtn:hover { background: rgba(251,255,184,0.08); }
+@media (hover: hover) {
+  .playbtn:hover { opacity: 1 !important; }
+}
 
 @media (max-width: 520px) {
   body {
@@ -218,10 +286,15 @@ canvas { display: block; margin-bottom: 20px; }
   }
 
   /* Canvas fills the screen width */
+  .canvas-wrap {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+
   canvas {
     width: 100% !important;
     height: auto !important;
-    margin-bottom: 16px;
   }
 
   .phase-label {
@@ -286,7 +359,9 @@ canvas { display: block; margin-bottom: 20px; }
   <div class="sliders" id="sliders"></div>
 </div>
 
+<div class="canvas-wrap" id="canvasWrap">
 <canvas id="c" width="400" height="200"></canvas>
+</div>
 
 <div class="phase-label" id="phaseLabel"></div>
 
@@ -335,6 +410,8 @@ function draw(prog) {
   ctx.clearRect(0, 0, W, H);
   const lc = 'rgba(251,255,184,0.25)';
   ctx.strokeStyle = lc; ctx.lineWidth = 0.75;
+  ctx.shadowColor = 'rgba(251,255,184,0.15)';
+  ctx.shadowBlur = 6;
   const t = prog * total();
   const { phase, local } = getPhase(t);
   let dot;
@@ -361,8 +438,22 @@ function draw(prog) {
   }
 
   const dotR = Math.max(8, W * 0.03);
+
+  // Outer glow
+  ctx.save();
+  ctx.shadowColor = dotC[mode];
+  ctx.shadowBlur = dotR * 2.5;
   ctx.beginPath(); ctx.arc(dot.x, dot.y, dotR, 0, Math.PI*2);
   ctx.fillStyle = dotC[mode]; ctx.fill();
+  ctx.restore();
+
+  // Inner highlight for 3D sphere feel
+  const grad = ctx.createRadialGradient(dot.x - dotR*0.3, dot.y - dotR*0.3, dotR*0.05, dot.x, dot.y, dotR);
+  grad.addColorStop(0, 'rgba(255,255,255,0.55)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.0)');
+  grad.addColorStop(1, 'rgba(0,0,0,0.2)');
+  ctx.beginPath(); ctx.arc(dot.x, dot.y, dotR, 0, Math.PI*2);
+  ctx.fillStyle = grad; ctx.fill();
 }
 
 function frame(ts) {

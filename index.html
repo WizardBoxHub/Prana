@@ -18,11 +18,11 @@ body {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  /* Radial light source from top-center, dark vignette at edges */
   background-image:
     radial-gradient(ellipse 80% 60% at 50% 0%, rgba(120,140,50,0.6) 0%, transparent 70%),
     radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 100%);
   background-color: #5F6A30;
+  transition: background-color 1.8s ease;
 }
 
 h1 {
@@ -328,11 +328,11 @@ canvas { display: block; }
 
 <div class="mode-select" id="modeSelect">
   <div class="mode-card active" onclick="setMode('line',this)">
-    <svg width="70" height="32" viewBox="0 0 70 32">
-      <line x1="6" y1="16" x2="64" y2="16" stroke="rgba(251,255,184,0.3)" stroke-width="0.75"/>
-      <circle cx="6" cy="16" r="3" fill="rgba(251,255,184,0.2)"/>
-      <circle cx="64" cy="16" r="3" fill="rgba(251,255,184,0.2)"/>
-      <circle cx="18" cy="16" r="8" fill="rgba(200,202,137,0.9)"/>
+    <svg width="70" height="50" viewBox="0 0 70 50">
+      <line x1="6" y1="25" x2="64" y2="25" stroke="rgba(251,255,184,0.3)" stroke-width="0.75"/>
+      <circle cx="6" cy="25" r="3" fill="rgba(251,255,184,0.2)"/>
+      <circle cx="64" cy="25" r="3" fill="rgba(251,255,184,0.2)"/>
+      <circle cx="18" cy="25" r="8" fill="rgba(200,202,137,0.9)"/>
     </svg>
     <div class="mc-name">Two phase</div>
     <div class="mc-desc">Inhale · exhale</div>
@@ -461,7 +461,7 @@ function frame(ts) {
   const prog = (ts - startTime) % (total() * 1000) / (total() * 1000);
   const { phase } = getPhase(prog * total());
   phaseLabel.textContent = names[phase];
-  document.body.style.background = bgC[phase];
+  document.body.style.backgroundColor = bgC[phase];
   draw(prog);
   if (playing) animId = requestAnimationFrame(frame);
 }
@@ -481,7 +481,7 @@ function togglePlay() {
     modeSelect.classList.remove('hidden');
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
-    document.body.style.background = '#5F6A30';
+    document.body.style.backgroundColor = '#5F6A30';
     phaseLabel.textContent = '';
     draw(0);
   }

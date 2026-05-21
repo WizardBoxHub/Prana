@@ -220,19 +220,19 @@ canvas { display: block; }
 
 @media (max-width: 520px) {
   body {
-    padding: 16px 14px 20px;
+    padding: 32px 16px 40px;
     justify-content: center;
     min-height: 100svh;
   }
 
   h1 {
-    margin-bottom: 14px;
-    font-size: 11px;
+    margin-bottom: 28px;
   }
 
+  /* Stack mode cards vertically in a compact row */
   .mode-select {
-    gap: 6px;
-    margin-bottom: 14px;
+    gap: 8px;
+    margin-bottom: 28px;
     width: 100%;
     justify-content: center;
   }
@@ -240,45 +240,39 @@ canvas { display: block; }
   .mode-card {
     width: auto;
     flex: 1;
-    max-width: 108px;
-    padding: 10px 8px 8px;
+    max-width: 110px;
+    padding: 14px 10px 12px;
     border-radius: 10px;
   }
 
   .mode-card svg {
-    margin-bottom: 4px;
-    height: 36px;
+    margin-bottom: 8px;
   }
 
   .mc-name {
-    font-size: 11px;
-    letter-spacing: 0.3px;
-    margin-bottom: 2px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
   }
 
   .mc-desc {
-    font-size: 9px;
+    font-size: 10px;
   }
 
-  /* All sliders in one row, never wrap */
+  /* Sliders: full-width tracks, bigger thumb */
   .collapsible {
-    max-height: 90px;
+    max-height: 160px;
     width: 100%;
   }
 
   .sliders {
-    gap: 0;
-    margin-bottom: 14px;
-    flex-wrap: nowrap;
-    justify-content: space-evenly;
-  }
-
-  .ctrl {
-    gap: 4px;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .ctrl input[type=range] {
-    width: 58px;
+    width: 72px;
     height: 2px;
   }
 
@@ -288,18 +282,14 @@ canvas { display: block; }
   }
 
   .ctrl .val {
-    font-size: 13px;
+    font-size: 16px;
   }
 
-  .ctrl label {
-    font-size: 8px;
-    letter-spacing: 1.5px;
-  }
-
+  /* Canvas fills the screen width */
   .canvas-wrap {
     width: 100%;
     border-radius: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
   }
 
   canvas {
@@ -308,21 +298,26 @@ canvas { display: block; }
   }
 
   .phase-label {
-    font-size: 16px;
+    font-size: 18px;
     letter-spacing: 5px;
-    margin-bottom: 14px;
-    min-height: 22px;
+    margin-bottom: 28px;
   }
 
+  /* Bigger tap target for play button */
   .playbtn {
     width: 100%;
-    max-width: 340px;
-    padding: 14px 0;
-    font-size: 11px;
+    max-width: 320px;
+    padding: 16px 0;
+    font-size: 12px;
     box-sizing: border-box;
     -webkit-appearance: none;
     appearance: none;
     outline: none;
+  }
+
+  .ctrl input[type=range] {
+    width: 80px;
+    height: 2px;
   }
 }
 </style>
@@ -514,9 +509,10 @@ function renderSliders() {
 
 function resizeCanvas() {
   if (window.innerWidth <= 520) {
-    const w = Math.min(window.innerWidth - 28, 400);
+    const w = Math.min(window.innerWidth - 32, 400);
+    const ratio = w / 400;
     canvas.width = w;
-    canvas.height = Math.round(w * 0.42); // shorter ratio on mobile
+    canvas.height = Math.round(200 * ratio);
   } else {
     canvas.width = 400;
     canvas.height = 200;

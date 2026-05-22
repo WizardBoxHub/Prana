@@ -163,6 +163,13 @@ h1 {
   box-shadow:
     0 8px 32px rgba(0,0,0,0.35),
     0 2px 8px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.canvas-wrap.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 canvas { display: block; }
@@ -266,10 +273,11 @@ canvas { display: block; }
   }
 
   .sliders {
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 32px;
     margin-bottom: 28px;
-    flex-wrap: wrap;
-    justify-content: center;
+    justify-items: center;
   }
 
   .ctrl input[type=range] {
@@ -472,6 +480,7 @@ function togglePlay() {
   if (playing) {
     sliderWrap.classList.add('hidden');
     modeSelect.classList.add('hidden');
+    document.getElementById('canvasWrap').classList.add('visible');
     playbtn.textContent = 'Stop';
     playbtn.classList.add('active');
     startTime = null;
@@ -480,6 +489,7 @@ function togglePlay() {
     cancelAnimationFrame(animId);
     sliderWrap.classList.remove('hidden');
     modeSelect.classList.remove('hidden');
+    document.getElementById('canvasWrap').classList.remove('visible');
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';

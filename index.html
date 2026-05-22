@@ -415,6 +415,7 @@ function pt(a, b, t) { return { x: lerp(a.x,b.x,t), y: lerp(a.y,b.y,t) }; }
 function draw(prog) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
+  if (!playing) return;
   // Fill canvas to match the card bg so no contrast edge shows
   ctx.fillStyle = 'rgba(0,0,0,0.0)';
   ctx.fillRect(0, 0, W, H);

@@ -10,25 +10,27 @@
 
 html {
   background-color: #5F6A30;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(120,140,50,0.6) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 100%);
+  background-attachment: fixed;
   min-height: 100%;
   transition: background-color 1.8s ease;
+  overscroll-behavior: none;
 }
 
 body {
-  background: #5F6A30;
+  background: transparent;
   color: #FBFFB8;
   font-family: 'Fraunces', serif;
-  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(120,140,50,0.6) 0%, transparent 70%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 100%);
-  background-color: #5F6A30;
   transition: background-color 1.8s ease;
+  overscroll-behavior: none;
 }
 
 h1 {
@@ -459,6 +461,7 @@ function frame(ts) {
   phaseLabel.textContent = names[phase];
   document.body.style.backgroundColor = bgC[phase];
   document.documentElement.style.backgroundColor = bgC[phase];
+  document.documentElement.style.backgroundColor = bgC[phase];
   draw(prog);
   if (playing) animId = requestAnimationFrame(frame);
 }
@@ -479,6 +482,7 @@ function togglePlay() {
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';
+    document.documentElement.style.backgroundColor = '#5F6A30';
     document.documentElement.style.backgroundColor = '#5F6A30';
     phaseLabel.textContent = '';
     draw(0);

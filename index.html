@@ -99,11 +99,20 @@ h1 {
 }
 
 .collapsible {
-  transition: opacity 0.5s, max-height 0.6s;
-  max-height: 200px;
+  transition: opacity 0.5s ease, max-height 0.7s ease, margin-bottom 0.7s ease;
   opacity: 1;
+  max-height: 400px;
 }
-.collapsible.hidden { opacity: 0; max-height: 0; pointer-events: none; overflow: hidden; }
+.collapsible.fading {
+  opacity: 0;
+  pointer-events: none;
+}
+.collapsible.hidden {
+  max-height: 0;
+  margin-bottom: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
 
 .sliders {
   display: flex;
@@ -272,9 +281,10 @@ canvas { display: block; }
   }
 
   .collapsible {
-    max-height: 240px;
     width: 100%;
   }
+
+  .sliders {
     gap: 16px;
     margin-bottom: 28px;
     flex-wrap: nowrap;
@@ -481,11 +491,18 @@ function frame(ts) {
   if (playing) animId = requestAnimationFrame(frame);
 }
 
+function hideCollapsible(el) {
+  el.classList.add('hidden');
+}
+function showCollapsible(el) {
+  el.classList.remove('hidden');
+}
+
 function togglePlay() {
   playing = !playing;
   if (playing) {
-    sliderWrap.classList.add('hidden');
-    modeSelect.classList.add('hidden');
+    hideCollapsible(sliderWrap);
+    hideCollapsible(modeSelect);
     playbtn.textContent = 'Stop';
     playbtn.classList.add('active');
     startTime = null;
@@ -500,8 +517,8 @@ function togglePlay() {
   } else {
     cancelAnimationFrame(animId);
     clearInterval(timerInterval);
-    sliderWrap.classList.remove('hidden');
-    modeSelect.classList.remove('hidden');
+    showCollapsible(sliderWrap);
+    showCollapsible(modeSelect);
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';

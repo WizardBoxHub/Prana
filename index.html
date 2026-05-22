@@ -523,28 +523,17 @@ function playSnap() {
   snapClip.play().catch(() => {});
 }
 
-function unlockSnapAudio() {
-  const vol = snapClip.volume;
-  snapClip.volume = 0;
-  return snapClip.play()
-    .then(() => { snapClip.pause(); snapClip.currentTime = 0; snapClip.volume = vol; })
-    .catch(() => { snapClip.volume = vol; });
-}
-
-function unlockVoiceAudio() {
-  return Promise.all([voiceClips.exhale, voiceClips.hold].map(clip => {
-    const vol = clip.volume;
-    clip.volume = 0;
-    return clip.play()
-      .then(() => { clip.pause(); clip.currentTime = 0; clip.volume = vol; })
-      .catch(() => { clip.volume = vol; });
-  }));
+function stopAllVoice() {
+  Object.values(voiceClips).forEach(c => { c.pause(); c.currentTime = 0; });
 }
 
 function playVoice(phase) {
   const key = phase === 'hold2' ? 'hold' : phase;
   const clip = voiceClips[key];
   if (!clip) return;
+  Object.values(voiceClips).forEach(c => {
+    if (c !== clip) { c.pause(); c.currentTime = 0; }
+  });
   clip.pause();
   clip.currentTime = 0;
   clip.play().catch(() => {});
@@ -682,19 +671,14 @@ function togglePlay() {
     }, 1000);
     const startLoop = () => { animId = requestAnimationFrame(frame); };
     if (soundMode === 'mouth') {
-      unlockVoiceAudio().then(() => {
-        if (!playing) return;
-        playVoice('inhale');
-        lastPhase = 'inhale';
-        startLoop();
-      });
+      stopAllVoice();
+      playVoice('inhale');
+      lastPhase = 'inhale';
+      startLoop();
     } else if (soundMode === 'snap') {
-      unlockSnapAudio().then(() => {
-        if (!playing) return;
-        playSnap();
-        lastPhase = modePhases[mode][0];
-        startLoop();
-      });
+      playSnap();
+      lastPhase = modePhases[mode][0];
+      startLoop();
     } else {
       startLoop();
     }

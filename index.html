@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5F6A30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Breathe — Premium Voodoo</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -163,13 +166,6 @@ h1 {
   box-shadow:
     0 8px 32px rgba(0,0,0,0.35),
     0 2px 8px rgba(0,0,0,0.2);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.5s ease;
-}
-.canvas-wrap.visible {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 canvas { display: block; }
@@ -472,6 +468,7 @@ function frame(ts) {
   phaseLabel.textContent = names[phase];
   document.body.style.backgroundColor = bgC[phase];
   document.documentElement.style.backgroundColor = bgC[phase];
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', bgC[phase]);
   draw(prog);
   if (playing) animId = requestAnimationFrame(frame);
 }
@@ -495,6 +492,7 @@ function togglePlay() {
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';
     document.documentElement.style.backgroundColor = '#5F6A30';
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', '#5F6A30');
     document.documentElement.style.backgroundColor = '#5F6A30';
     phaseLabel.textContent = '';
     draw(0);

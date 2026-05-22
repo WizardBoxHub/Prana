@@ -13,9 +13,6 @@
 
 html {
   background-color: #5F6A30;
-  background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(120,140,50,0.6) 0%, transparent 70%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 100%);
   background-attachment: fixed;
   min-height: 100%;
   transition: background-color 1.8s ease;
@@ -269,11 +266,12 @@ canvas { display: block; }
   }
 
   .sliders {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 20px 32px;
     margin-bottom: 28px;
-    justify-items: center;
+    justify-content: center;
+    max-width: 240px;
   }
 
   .ctrl input[type=range] {

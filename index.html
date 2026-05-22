@@ -13,7 +13,6 @@
 
 html {
   background-color: #5F6A30;
-  background-attachment: fixed;
   min-height: 100%;
   transition: background-color 1.8s ease;
   overscroll-behavior: none;
@@ -154,15 +153,16 @@ h1 {
   text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 
+/* Canvas wrapper — flat background, no gradient stripes */
 .canvas-wrap {
   position: relative;
   margin-bottom: 20px;
   border-radius: 16px;
   overflow: hidden;
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.12);
   box-shadow:
-    0 8px 32px rgba(0,0,0,0.35),
-    0 2px 8px rgba(0,0,0,0.2);
+    0 8px 32px rgba(0,0,0,0.4),
+    0 2px 8px rgba(0,0,0,0.25);
 }
 
 canvas { display: block; }
@@ -266,12 +266,11 @@ canvas { display: block; }
   }
 
   .sliders {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px 32px;
+    gap: 20px;
     margin-bottom: 28px;
+    flex-wrap: wrap;
     justify-content: center;
-    max-width: 240px;
+    max-width: 220px;
   }
 
   .ctrl input[type=range] {
@@ -409,10 +408,6 @@ function pt(a, b, t) { return { x: lerp(a.x,b.x,t), y: lerp(a.y,b.y,t) }; }
 function draw(prog) {
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
-  if (!playing) return;
-  // Fill canvas to match the card bg so no contrast edge shows
-  ctx.fillStyle = 'rgba(0,0,0,0.0)';
-  ctx.fillRect(0, 0, W, H);
   const lc = 'rgba(251,255,184,0.25)';
   ctx.strokeStyle = lc; ctx.lineWidth = 0.75;
   ctx.shadowColor = 'rgba(251,255,184,0.15)';
@@ -476,7 +471,6 @@ function togglePlay() {
   if (playing) {
     sliderWrap.classList.add('hidden');
     modeSelect.classList.add('hidden');
-    document.getElementById('canvasWrap').classList.add('visible');
     playbtn.textContent = 'Stop';
     playbtn.classList.add('active');
     startTime = null;
@@ -485,13 +479,11 @@ function togglePlay() {
     cancelAnimationFrame(animId);
     sliderWrap.classList.remove('hidden');
     modeSelect.classList.remove('hidden');
-    document.getElementById('canvasWrap').classList.remove('visible');
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     document.body.style.backgroundColor = '#5F6A30';
     document.documentElement.style.backgroundColor = '#5F6A30';
     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#5F6A30');
-    document.documentElement.style.backgroundColor = '#5F6A30';
     phaseLabel.textContent = '';
     draw(0);
   }

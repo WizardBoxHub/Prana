@@ -216,6 +216,17 @@ canvas { display: block; }
 }
 
 .playbtn.active { opacity: 0.5; }
+
+.session-timer {
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: rgba(251,255,184,0.5);
+  font-weight: 300;
+  margin-top: 14px;
+  min-height: 20px;
+  text-align: center;
+  font-family: 'Fraunces', serif;
+}
 .playbtn:hover { background: rgba(251,255,184,0.08); }
 @media (hover: hover) {
   .playbtn:hover { opacity: 1 !important; }
@@ -370,6 +381,7 @@ canvas { display: block; }
 <div class="phase-label" id="phaseLabel"></div>
 
 <button class="playbtn" id="playbtn" onclick="togglePlay()">Start</button>
+<div class="session-timer" id="sessionTimer"></div>
 
 <script>
 const canvas = document.getElementById('c');
@@ -379,8 +391,9 @@ const phaseLabel = document.getElementById('phaseLabel');
 const playbtn = document.getElementById('playbtn');
 const sliderWrap = document.getElementById('sliderWrap');
 const modeSelect = document.getElementById('modeSelect');
+const sessionTimer = document.getElementById('sessionTimer');
 
-let mode = 'line', playing = false, animId = null, startTime = null;
+let mode = 'line', playing = false, animId = null, startTime = null, sessionStart = null, timerInterval = null;
 const times = { inhale: 4, hold: 4, exhale: 4, hold2: 4 };
 const modePhases = {
   line: ['inhale','exhale'],
@@ -478,9 +491,17 @@ function togglePlay() {
     playbtn.textContent = 'Stop';
     playbtn.classList.add('active');
     startTime = null;
+    sessionStart = Date.now();
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      sessionTimer.textContent = m + ':' + s;
+    }, 1000);
     animId = requestAnimationFrame(frame);
   } else {
     cancelAnimationFrame(animId);
+    clearInterval(timerInterval);
     sliderWrap.classList.remove('hidden');
     modeSelect.classList.remove('hidden');
     playbtn.textContent = 'Start';
@@ -489,6 +510,7 @@ function togglePlay() {
     document.documentElement.style.backgroundColor = '#5F6A30';
     document.querySelector('meta[name="theme-color"]').setAttribute('content', '#5F6A30');
     phaseLabel.textContent = '';
+    sessionTimer.textContent = '';
     draw(0);
   }
 }

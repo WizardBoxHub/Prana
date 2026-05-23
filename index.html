@@ -516,6 +516,26 @@ const voiceClips = {
 };
 Object.values(voiceClips).forEach(a => { a.preload = 'auto'; });
 
+const voiceFiles = { inhale: 'B_IN.mp3', exhale: 'B_OUT.mp3', hold: 'HOLD.mp3' };
+let audioCtx = null;
+const voiceBuffers = {};
+let voiceSource = null;
+
+function isMobileVoice() {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+    window.matchMedia('(max-width: 520px)').matches;
+}
+
+async function initMobileVoice() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  await Promise.all(Object.entries(voiceFiles).map(async ([key, url]) => {
+    if (voiceBuffers[key]) return;
+    const res = await fetch(url);
+    voiceBuffers[key] = await audioCtx.decodeAudioData(await res.arrayBuffer());
+  }));
+}
+
 const snapClip = new Audio('CLICK.mp3');
 snapClip.preload = 'auto';
 
@@ -526,10 +546,33 @@ function playSnap() {
 }
 
 function stopAllVoice() {
+  if (voiceSource) {
+    try { voiceSource.stop(); } catch (_) {}
+    voiceSource = null;
+  }
   Object.values(voiceClips).forEach(c => { c.pause(); c.currentTime = 0; });
 }
 
+function playVoiceMobile(phase) {
+  const key = phase === 'hold2' ? 'hold' : phase;
+  const buf = voiceBuffers[key];
+  if (!buf || !audioCtx) return;
+  if (voiceSource) {
+    try { voiceSource.stop(); } catch (_) {}
+    voiceSource = null;
+  }
+  voiceSource = audioCtx.createBufferSource();
+  voiceSource.buffer = buf;
+  voiceSource.connect(audioCtx.destination);
+  voiceSource.onended = () => { voiceSource = null; };
+  voiceSource.start(0);
+}
+
 function playVoice(phase) {
+  if (isMobileVoice() && audioCtx) {
+    playVoiceMobile(phase);
+    return;
+  }
   const key = phase === 'hold2' ? 'hold' : phase;
   const clip = voiceClips[key];
   if (!clip) return;
@@ -674,9 +717,18 @@ function togglePlay() {
     const startLoop = () => { animId = requestAnimationFrame(frame); };
     if (soundMode === 'mouth') {
       stopAllVoice();
-      playVoice('inhale');
-      lastPhase = 'inhale';
-      startLoop();
+      if (isMobileVoice()) {
+        initMobileVoice().then(() => {
+          if (!playing) return;
+          playVoice('inhale');
+          lastPhase = 'inhale';
+          startLoop();
+        }).catch(() => startLoop());
+      } else {
+        playVoice('inhale');
+        lastPhase = 'inhale';
+        startLoop();
+      }
     } else if (soundMode === 'snap') {
       playSnap();
       lastPhase = modePhases[mode][0];
@@ -693,7 +745,7 @@ function togglePlay() {
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     lastPhase = null;
-    Object.values(voiceClips).forEach(a => { a.pause(); a.currentTime = 0; });
+    stopAllVoice();
     snapClip.pause();
     snapClip.currentTime = 0;
     document.body.style.backgroundColor = '#5F6A30';

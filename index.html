@@ -599,8 +599,7 @@ async function initMobileVoice() {
 const snapClip = new Audio('CLICK.mp3');
 snapClip.preload = 'auto';
 let snapBuffer = null;
-let snapScheduleId = 0;
-let snapRescheduleTimer = null;
+let lastSnapPhase = null;
 const SNAP_LEAD = 0.05;
 
 async function ensureAudioCtx() {
@@ -621,41 +620,24 @@ function playSnapFallback() {
   snapClip.play().catch(() => {});
 }
 
-function cancelSnapSchedule() {
-  snapScheduleId++;
-  if (snapRescheduleTimer) {
-    clearTimeout(snapRescheduleTimer);
-    snapRescheduleTimer = null;
-  }
-}
-
-function scheduleSnapSounds() {
-  if (soundMode !== 'snap' || !playing) return;
-  if (!audioCtx || !snapBuffer) {
-    playSnapFallback();
-    return;
-  }
-  const id = ++snapScheduleId;
-  const phases = modePhases[mode];
-  const cycleDur = total();
-  const base = audioCtx.currentTime;
-
-  for (let c = 0; c < 4; c++) {
-    let t = 0;
-    for (const p of phases) {
-      const when = Math.max(audioCtx.currentTime, base + c * cycleDur + t - SNAP_LEAD);
+function playSnapNow() {
+  if (snapBuffer && audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    try {
       const src = audioCtx.createBufferSource();
       src.buffer = snapBuffer;
       src.connect(audioCtx.destination);
-      try { src.start(when); } catch (_) {}
-      t += times[p];
-    }
+      src.start(0);
+      return;
+    } catch (_) {}
   }
+  playSnapFallback();
+}
 
-  snapRescheduleTimer = setTimeout(() => {
-    if (id !== snapScheduleId || !playing || soundMode !== 'snap') return;
-    scheduleSnapSounds();
-  }, Math.max(200, (cycleDur * 2 - 0.25) * 1000));
+function playSnapAtPhase(phase) {
+  if (!playing || soundMode !== 'snap' || phase === lastSnapPhase) return;
+  lastSnapPhase = phase;
+  playSnapNow();
 }
 
 function stopAllVoice() {
@@ -781,14 +763,20 @@ function draw(prog) {
 
 function frame(ts) {
   if (!startTime) startTime = ts;
-  const prog = (ts - startTime) % (total() * 1000) / (total() * 1000);
-  const { phase } = getPhase(prog * total());
-  playPhaseSound(phase);
+  const cycleMs = total() * 1000;
+  const elapsedSec = ((ts - startTime) % cycleMs) / 1000;
+  const { phase } = getPhase(elapsedSec);
+  if (soundMode === 'snap') {
+    const aheadSec = (elapsedSec + SNAP_LEAD) % total();
+    playSnapAtPhase(getPhase(aheadSec).phase);
+  } else {
+    playPhaseSound(phase);
+  }
   phaseLabel.textContent = names[phase];
   document.body.style.backgroundColor = bgC[phase];
   document.documentElement.style.backgroundColor = bgC[phase];
   document.querySelector('meta[name="theme-color"]').setAttribute('content', bgC[phase]);
-  draw(prog);
+  draw(elapsedSec / total());
   if (playing) animId = requestAnimationFrame(frame);
 }
 
@@ -858,15 +846,15 @@ function togglePlay() {
         startLoop();
       }
     } else if (soundMode === 'snap') {
+      lastSnapPhase = null;
       initSnapAudio().then(() => {
         if (!playing) return;
-        scheduleSnapSounds();
-        lastPhase = modePhases[mode][0];
+        playSnapAtPhase(modePhases[mode][0]);
         startLoop();
       }).catch(() => {
         if (!playing) return;
         playSnapFallback();
-        lastPhase = modePhases[mode][0];
+        lastSnapPhase = modePhases[mode][0];
         startLoop();
       });
     } else {
@@ -882,7 +870,7 @@ function togglePlay() {
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     lastPhase = null;
-    cancelSnapSchedule();
+    lastSnapPhase = null;
     stopAllVoice();
     snapClip.pause();
     snapClip.currentTime = 0;

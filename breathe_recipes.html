@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pranayama Recipes — Breathe</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --olive:   #5F6A30;
+    --olive-dk:#4a5425;
+    --olive-lt:#7a8a3d;
+    --cream:   #FBFFB8;
+    --cream-dk:#e8ebb0;
+    --cream-dim:#c4c890;
+    --bg:      #1a1d0d;
+    --bg2:     #22260f;
+    --bg3:     #2c3214;
+    --text:    #FBFFB8;
+    --muted:   #9da875;
+    --accent:  #c8d44a;
+    --danger:  #d4824a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Fraunces', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── TOP NAV ─────────────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--olive-dk);
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  header h1 {
+    font-size: 1.4rem; font-weight: 300; letter-spacing: .12em;
+    color: var(--cream); flex: 1;
+  }
+  header h1 span { color: var(--olive-lt); font-style: italic; }
+  .source-tag {
+    font-size: .65rem; font-style: italic; color: var(--muted);
+    border: 1px solid var(--olive-dk); border-radius: 3px;
+    padding: 2px 8px; white-space: nowrap;
+  }
+
+  /* ─── FILTER TABS ─────────────────────────── */
+  .filters {
+    display: flex; gap: 8px; overflow-x: auto; padding: 16px 24px 0;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-btn {
+    font-family: 'Fraunces', serif;
+    font-size: .75rem; letter-spacing: .08em;
+    background: none; border: 1px solid var(--olive-dk);
+    color: var(--muted); border-radius: 20px;
+    padding: 6px 16px; cursor: pointer; white-space: nowrap;
+    transition: all .2s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--olive-dk); color: var(--cream); border-color: var(--olive-lt);
+  }
+
+  /* ─── GRID ────────────────────────────────── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px; padding: 20px 24px 80px;
+  }
+
+  /* ─── RECIPE CARD ─────────────────────────── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--olive-dk);
+    border-radius: 8px; overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s, transform .15s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { border-color: var(--olive-lt); transform: translateY(-2px); }
+
+  .card-banner {
+    height: 6px;
+  }
+
+  .card-body { padding: 20px; flex: 1; }
+  .card-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .card-level {
+    font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-duration {
+    font-size: .7rem; color: var(--muted);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .card-title {
+    font-size: 1.1rem; font-weight: 400; color: var(--cream);
+    margin-bottom: 6px; line-height: 1.3;
+  }
+  .card-subtitle {
+    font-size: .8rem; font-style: italic; color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card-desc {
+    font-size: .82rem; color: var(--cream-dim); line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: .65rem; letter-spacing: .06em;
+    background: var(--bg3); border: 1px solid var(--olive-dk);
+    color: var(--muted); border-radius: 3px; padding: 2px 8px;
+  }
+  .card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--bg3);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .ratio-display {
+    font-size: .75rem; color: var(--accent); letter-spacing: .06em;
+    font-variant-numeric: tabular-nums;
+  }
+  .start-btn {
+    font-family: 'Fraunces', serif;
+    font-size: .72rem; letter-spacing: .08em;
+    background: var(--olive-dk); color: var(--cream);
+    border: 1px solid var(--olive-lt); border-radius: 4px;
+    padding: 6px 16px; cursor: pointer;
+    transition: background .15s;
+  }
+  .start-btn:hover { background: var(--olive-lt); }
+
+  /* ─── MODAL OVERLAY ───────────────────────── */
+  .overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,12,5,.85); backdrop-filter: blur(4px);
+    overflow-y: auto;
+    padding: 32px 16px;
+  }
+  .overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--olive);
+    border-radius: 10px; overflow: hidden;
+    width: 100%; max-width: 560px;
+    animation: slide-up .2s ease;
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-banner { height: 8px; }
+  .modal-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--bg3);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px;
+  }
+  .modal-title-block .modal-title {
+    font-size: 1.4rem; font-weight: 400; color: var(--cream);
+    line-height: 1.2; margin-bottom: 4px;
+  }
+  .modal-title-block .modal-sub {
+    font-size: .85rem; font-style: italic; color: var(--muted);
+  }
+  .close-btn {
+    background: none; border: 1px solid var(--olive-dk);
+    color: var(--muted); border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: border-color .15s;
+  }
+  .close-btn:hover { border-color: var(--olive-lt); color: var(--cream); }
+
+  .modal-body { padding: 20px 24px; }
+
+  .modal-section { margin-bottom: 22px; }
+  .modal-section h3 {
+    font-size: .7rem; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--olive-lt); margin-bottom: 10px;
+  }
+  .modal-section p {
+    font-size: .88rem; color: var(--cream-dim); line-height: 1.6;
+  }
+
+  /* Phase blocks */
+  .phases { display: flex; flex-direction: column; gap: 8px; }
+  .phase {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg3); border-radius: 6px; padding: 10px 14px;
+  }
+  .phase-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 600; flex-shrink: 0;
+  }
+  .phase-inhale  { background: rgba(95,106,48,.4); color: #a8c040; }
+  .phase-hold    { background: rgba(212,130,74,.3); color: #d4a44a; }
+  .phase-exhale  { background: rgba(30,60,20,.5);   color: #7aaa50; }
+  .phase-empty   { background: rgba(60,30,80,.3);   color: #a080c0; }
+
+  .phase-label { font-size: .82rem; color: var(--cream); flex: 1; }
+  .phase-count {
+    font-size: .82rem; color: var(--accent);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+
+  /* Visualization block */
+  .visualization-block {
+    background: var(--bg3); border-radius: 6px; padding: 14px;
+    border-left: 3px solid var(--olive);
+    font-size: .83rem; color: var(--cream-dim); line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* Warnings */
+  .warning {
+    background: rgba(212,130,74,.12); border: 1px solid rgba(212,130,74,.3);
+    border-radius: 6px; padding: 10px 14px;
+    font-size: .8rem; color: #d4a070; line-height: 1.5;
+    display: flex; gap: 8px;
+  }
+
+  /* Stat pills */
+  .stat-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+  .stat-pill {
+    background: var(--bg3); border: 1px solid var(--olive-dk);
+    border-radius: 20px; padding: 4px 14px;
+    font-size: .78rem; color: var(--cream-dim);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill strong { color: var(--accent); }
+
+  /* Steps list */
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .step {
+    display: flex; gap: 12px;
+    font-size: .84rem; color: var(--cream-dim); line-height: 1.5;
+  }
+  .step-n {
+    color: var(--olive-lt); font-size: .75rem; font-weight: 600;
+    width: 18px; flex-shrink: 0; padding-top: 2px; text-align: right;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--bg3);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .btn-secondary {
+    font-family: 'Fraunces', serif;
+    font-size: .78rem; letter-spacing: .06em;
+    background: none; border: 1px solid var(--olive-dk);
+    color: var(--muted); border-radius: 5px;
+    padding: 8px 20px; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .btn-secondary:hover { border-color: var(--olive-lt); color: var(--cream); }
+  .btn-primary {
+    font-family: 'Fraunces', serif;
+    font-size: .78rem; letter-spacing: .06em;
+    background: var(--olive); color: var(--cream);
+    border: 1px solid var(--olive-lt); border-radius: 5px;
+    padding: 8px 24px; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-primary:hover { background: var(--olive-lt); }
+
+  /* hidden cards */
+  .card.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Breathe — <span>Recipes</span></h1>
+  <div class="source-tag">Mihajlović · Fakirs and Yogis</div>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="foundation">Foundation</button>
+  <button class="filter-btn" data-filter="alternate">Alternate Nostril</button>
+  <button class="filter-btn" data-filter="retention">Retention</button>
+  <button class="filter-btn" data-filter="visualization">Visualization</button>
+  <button class="filter-btn" data-filter="advanced">Advanced</button>
+</div>
+
+<div class="grid" id="grid">
+  <!-- Cards injected by JS -->
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-banner" id="modal-banner"></div>
+    <div class="modal-header">
+      <div class="modal-title-block">
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-sub" id="modal-sub"></div>
+      </div>
+      <button class="close-btn" onclick="closeOverlay()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeOverlay()">Close</button>
+      <button class="btn-primary" onclick="addToSession()">Add to Session</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const RECIPES = [
+  {
+    id: 'pranic',
+    title: 'Pranic Complete Breath',
+    subtitle: 'Pranic breathing',
+    level: 'Foundation',
+    duration: '5–10 min',
+    categories: ['foundation'],
+    color: '#7a8a3d',
+    ratio: 'In · Hold · Out',
+    session: { mode: 'triangle', inhale: 4, hold: 4, exhale: 8 },
+    tags: ['foundational', 'lung capacity', 'prerequisite'],
+    shortDesc: 'The foundational complete breath engaging all three zones of the lungs. All higher exercises depend on mastery of this.',
+    detail: {
+      purpose: 'Fills the lungs completely — lower, middle, and upper. The diaphragm is fully engaged; effort is minimal. All other pranayama practices require this as their base.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — lower lungs first', count: 'push belly out' },
+        { type: 'inhale', label: 'Continue — middle lungs', count: 'seamless flow' },
+        { type: 'inhale', label: 'Complete — upper lungs', count: 'shoulders stay down' },
+        { type: 'hold',   label: 'Retain briefly', count: 'few seconds' },
+        { type: 'exhale', label: 'Exhale — slow and even', count: '2× inhale time' },
+      ],
+      steps: [
+        'Sit on a chair, spine fully erect, back not touching the backrest.',
+        'Cross your ankles. Begin to inhale slowly into the lower lungs, pushing the belly forward and down.',
+        'Without pause, continue inhaling into the middle, then upper lungs. Do not raise the shoulders. The belly will draw in slightly as the chest expands.',
+        'What feels like three separate movements should become one single, even wave.',
+        'Hold for a few seconds, then exhale slowly and evenly.',
+        'Practice three times daily before meals, for several minutes, until this becomes your permanent natural breath.',
+      ],
+      warning: null,
+      visualization: null,
+    }
+  },
+  {
+    id: 'anuloma',
+    title: 'Anuloma Viloma',
+    subtitle: 'Basic alternate nostril',
+    level: 'Beginner',
+    duration: '2–4 weeks daily',
+    categories: ['foundation','alternate'],
+    color: '#5a8a5a',
+    ratio: '1 : 2',
+    session: { mode: 'line', inhale: 5, exhale: 10 },
+    tags: ['alternate nostril', 'no retention', 'balancing'],
+    shortDesc: 'Alternate nostril breathing without retention. Ratio 1:2 (exhale twice as long as inhale). Practice 2× daily for one month before advancing.',
+    detail: {
+      purpose: 'Balances the Ida and Pingala currents. Clears the voice, removes insomnia and headaches. Practiced for 2–4 weeks before introducing retention.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — left nostril (right closed)', count: '5 × OM' },
+        { type: 'exhale', label: 'Exhale — left nostril', count: '10 × OM' },
+        { type: 'inhale', label: 'Inhale — right nostril (left closed)', count: '5 × OM' },
+        { type: 'exhale', label: 'Exhale — right nostril', count: '10 × OM' },
+      ],
+      steps: [
+        'Sit in your usual position: spine straight, ankles crossed.',
+        'Use the right hand throughout. Close the right nostril with the thumb.',
+        'Inhale through the left nostril for 5 internal repetitions of "OM" (≈1 sec each).',
+        'Exhale through the same left nostril for 10 repetitions of "OM" — twice as slow.',
+        'Repeat 10 times, then switch: close left with ring + little finger, inhale right for 5 OM, exhale right for 10 OM.',
+        'Practice 2× daily (morning and evening). After one month, move to Exercise 2. Do not continue Anuloma Viloma after that.',
+      ],
+      warning: null,
+      visualization: null,
+    }
+  },
+  {
+    id: 'ex2',
+    title: 'Alternate Nostril with Retention',
+    subtitle: 'Exercise No. 2',
+    level: 'Intermediate',
+    duration: '1 month daily',
+    categories: ['alternate','retention'],
+    color: '#a07030',
+    ratio: '1 : 2 · (→ 1 : 2 : 4)',
+    session: { mode: 'line', inhale: 6, exhale: 12 },
+    tags: ['alternate nostril', 'kumbhaka', 'retention'],
+    shortDesc: 'Adds brief retention. Begins at 6:12 count, advances to 8:16 over time. No hold in this exercise — exhale begins immediately after inhale.',
+    detail: {
+      purpose: 'Develops control over the breath and begins prana accumulation. Prerequisite for the full 1:4:2 rhythm of Exercise 3.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — left nostril', count: '6 × OM' },
+        { type: 'exhale', label: 'Exhale — right nostril', count: '12 × OM' },
+        { type: 'inhale', label: 'Inhale — right nostril', count: '6 × OM' },
+        { type: 'exhale', label: 'Exhale — left nostril', count: '12 × OM' },
+      ],
+      steps: [
+        'Prerequisite: Anuloma Viloma must be fully mastered first.',
+        'Close right nostril, inhale left for 6 OM. Immediately (no pause) close left, release right, exhale right for 12 OM.',
+        'Do not let the lungs go empty — inhale right for 6 OM immediately. Close right, release left, exhale left for 12 OM.',
+        'That completes one full cycle. Perform 10 cycles.',
+        'After some time when no effort is felt, extend to 8 OM inhale / 16 OM exhale.',
+        'Practice 2× daily. Once Exercise 3 begins, discontinue this exercise.',
+      ],
+      warning: null,
+      visualization: null,
+    }
+  },
+  {
+    id: 'ex3',
+    title: 'Full Pranayama — 1 : 4 : 2',
+    subtitle: 'Exercise No. 3 · Kumbhaka',
+    level: 'Intermediate',
+    duration: 'Months → lifetime',
+    categories: ['retention','visualization'],
+    color: '#c05030',
+    ratio: '1 : 4 : 2',
+    session: { mode: 'triangle', inhale: 4, hold: 16, exhale: 8 },
+    tags: ['kumbhaka', 'retention', 'visualization', 'muladhara', 'kundalini'],
+    shortDesc: 'The peak of pranayama. Retention (kumbhaka) is 4× the inhale; exhale is 2×. Visualization of prana as a white stream is essential. Max 5 cycles morning, 5 evening.',
+    detail: {
+      purpose: 'Maximum prana absorption into the nervous system. Strong sweating during retention is a good sign. Activates the chakras gently. After 1 month, visualization is added.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — left nostril', count: '4 × OM' },
+        { type: 'hold',   label: 'Retain — both nostrils closed', count: '16 × OM' },
+        { type: 'exhale', label: 'Exhale — right nostril', count: '8 × OM' },
+        { type: 'inhale', label: 'Inhale — right nostril', count: '4 × OM' },
+        { type: 'hold',   label: 'Retain — both nostrils closed', count: '16 × OM' },
+        { type: 'exhale', label: 'Exhale — left nostril', count: '8 × OM' },
+      ],
+      steps: [
+        'Prerequisites: Exercises 1 and 2 fully mastered.',
+        'Inhale through left nostril counting 4 OM. Close both nostrils, hold for 16 OM.',
+        'Release right nostril only, exhale for 8 OM. That is half the exercise.',
+        'Inhale right for 4 OM, retain for 16 OM, exhale left for 8 OM.',
+        'Do NOT exceed 5 cycles in the morning and 5 in the evening. Always on an empty stomach.',
+        'During retention, strong sweating — even in cold rooms — is a very favourable sign. Root of hair sweating is especially auspicious.',
+        'After one month, add the visualization (see below).',
+      ],
+      warning: 'This is the most dangerous form of pranayama. Practice with great patience and caution. Risk of abnormal stretching of lung tissue and strain on the entire nervous system if the ratio is exceeded.',
+      visualization: 'While inhaling (4 OM): imagine a milky-white stream of light entering through the open nostril, flowing down the spine to its base where the Muladhara chakra glows like molten gold — a small brilliant triangle.\n\nDuring retention (16 OM): the white stream strikes the golden triangle in a powerful jet.\n\nDuring exhale (8 OM): imagine the white stream rising back up the spine and leaving through the open nostril.',
+    }
+  },
+  {
+    id: 'ex4',
+    title: 'Empty Lungs Variation',
+    subtitle: 'Exercise No. 4 · Reversed kumbhaka',
+    level: 'Intermediate',
+    duration: 'Alongside Exercise 3',
+    categories: ['retention','visualization'],
+    color: '#7040a0',
+    ratio: '1 : 0 : 2 (empty hold)',
+    session: { mode: 'square', inhale: 4, hold: 1, exhale: 8, hold2: 8 },
+    tags: ['empty retention', 'visualization', 'safer'],
+    shortDesc: 'Like Exercise 3 but the hold is with empty lungs. Slightly harder to execute but almost entirely safe — practice as many times as desired.',
+    detail: {
+      purpose: 'The white stream visualization is not air — it is a product of concentrated imagination. Safe because lungs are empty during the hold phase.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — open nostril', count: '4 × OM' },
+        { type: 'exhale', label: 'Exhale immediately', count: '8 × OM' },
+        { type: 'empty',  label: 'Hold — lungs empty', count: '8 × OM' },
+      ],
+      steps: [
+        'Same position and nostril alternation as Exercise 3.',
+        'Inhale for 4 OM, exhale immediately for 8 OM. In the third phase, lungs are completely empty for 8 OM.',
+        'Use the same visualization: the white stream is not air but a product of concentrated imagination.',
+        'Unlike Exercise 3, this can be done as many times as you wish. Max for Exercise 3 remains 5 morning + 5 evening.',
+      ],
+      warning: null,
+      visualization: 'Same as Exercise 3: imagine the milky-white prana stream flowing down to Muladhara on inhale, concentrating there during the empty hold, and rising back out on exhale.',
+    }
+  },
+  {
+    id: 'solar',
+    title: 'Solar Plexus Breath',
+    subtitle: 'Solar plexus breathing',
+    level: 'Intermediate',
+    duration: '1–2× weekly',
+    categories: ['visualization'],
+    color: '#c0a020',
+    ratio: '6 · 3 · 3 (piston)',
+    session: { mode: 'triangle', inhale: 6, hold: 12, exhale: 6 },
+    tags: ['solar plexus', 'manipura', 'massage', 'nervous system'],
+    shortDesc: 'A deep breath held and \"massaged\" between upper and lower lungs four times before exhaling. Extraordinary effect on the entire nervous system.',
+    detail: {
+      purpose: 'The solar plexus (Manipura chakra) is the main prana accumulator. This exercise massages and revitalises it. Performed lying down, 3–5 repetitions, not necessarily daily.',
+      phases: [
+        { type: 'inhale', label: 'Deep inhale — count to 6', count: '6 counts' },
+        { type: 'hold',   label: 'Push air to lower belly', count: '3 counts' },
+        { type: 'hold',   label: 'Transfer to upper chest', count: '3 counts' },
+        { type: 'hold',   label: 'Return to belly — repeat 4×', count: 'cycle ×4' },
+        { type: 'exhale', label: 'Slow exhale — count to 6', count: '6 counts' },
+      ],
+      steps: [
+        'Lie on the floor or a firm surface, arms at sides. Fully relax.',
+        'After 1–2 minutes relaxation, begin: inhale deeply while counting 1 to 6.',
+        'Force all air into the lower lungs / belly as much as possible. Hold for 3 counts.',
+        'Transfer the air to the upper chest (belly draws in, chest rises). Hold 3 counts.',
+        'Return air to belly immediately without releasing. Hold 3 counts. This completes one massage cycle.',
+        'Repeat the transfer 4 times (belly → chest → belly → chest...) without releasing any air.',
+        'On the 4th return to belly, slowly exhale counting 1 to 6.',
+        'If 4 massage cycles is too many, reduce to 2. Repeat the whole exercise 3–5 times.',
+        'Practice alongside the daily exercises — once a week is sufficient.',
+      ],
+      warning: null,
+      visualization: null,
+    }
+  },
+  {
+    id: 'accumulation',
+    title: 'Prana Accumulation',
+    subtitle: 'Prana accumulation through rhythmic breathing',
+    level: 'Intermediate',
+    duration: '10–15 min',
+    categories: ['visualization'],
+    color: '#3070b0',
+    ratio: '4 : 4 : 4',
+    session: { mode: 'triangle', inhale: 4, hold: 4, exhale: 4 },
+    tags: ['accumulation', 'visualization', 'crimson', 'resting'],
+    shortDesc: 'Rhythmic breathing lying down, visualising the body submerged in a luminous red liquid. Prana concentrates in the solar plexus and radiates outward during retention.',
+    detail: {
+      purpose: 'Rapidly accumulates a large quantity of prana in the nervous system. The vivid mental image is the decisive factor — not the quantity of air breathed.',
+      phases: [
+        { type: 'inhale', label: 'Inhale', count: '4 counts' },
+        { type: 'hold',   label: 'Retain — prana gathers in plexus', count: '4 counts' },
+        { type: 'exhale', label: 'Exhale — red fluid flows out through legs', count: '4 counts' },
+      ],
+      steps: [
+        'Lie on a carpet or firm surface, arms beside the body. Relax all muscles as much as possible.',
+        'After 1–2 minutes begin rhythmic breathing using a 4:4:4 count.',
+        'Do NOT repeat "OM" internally — simply count: one, two, three, four.',
+        'On inhale: imagine the whole body submerged in a brilliantly luminous red-crimson liquid. With each inhale it enters through both nostrils and fills the lungs.',
+        'During retention: imagine prana gathering in the solar plexus and radiating outward to the surroundings.',
+        'On exhale: imagine the red liquid flowing back out through the nose.',
+        'Be completely relaxed. Do not clench jaw or fists. The sharp and vivid mental image does all the work.',
+      ],
+      warning: null,
+      visualization: 'The entire body is immersed in a glowing crimson fluid. Each inhale draws it in through both nostrils. During the hold it pools in the solar plexus, radiating heat and light. On exhale it streams back out through the nose.',
+    }
+  },
+  {
+    id: 'swing',
+    title: 'Royal Pranayama — The Swing',
+    subtitle: 'Royal pranayama · The Swing',
+    level: 'Advanced',
+    duration: 'Discover in days; practice for life',
+    categories: ['advanced','visualization'],
+    color: '#a04080',
+    ratio: 'Your own golden rhythm',
+    session: { mode: 'line', inhale: 4, exhale: 4 },
+    tags: ['golden rhythm', 'recovery', 'natural', 'unique', 'pendulum'],
+    shortDesc: 'The secret of fakir science: each person\'s natural recovery rhythm, discovered through exhaustion, delivers far more prana than any fixed count. First published in Western literature by Mihajlović.',
+    detail: {
+      purpose: 'Deliberate breathing in the exact personal rhythm that nature uses to restore depleted nervous energy — after intense physical, mental, or emotional exertion. Absorption is incomparably greater than ordinary pranayama.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — one swing arc', count: 'your rhythm' },
+        { type: 'exhale', label: 'Exhale — return arc', count: 'your rhythm' },
+      ],
+      steps: [
+        'DISCOVER YOUR RHYTHM: In your room, do intense physical exercise for 1–2 minutes (climb up and down a chair as fast as possible, or sprint up several floors and back).',
+        'Stand still while strongly out of breath. Observe your breathing carefully.',
+        'After a few very rapid deep breaths, a noticeably longer phase of measured, deep, rhythmic inhalations and exhalations will arrive — like the even swinging of a pendulum.',
+        'This "golden rhythm" lasts for some time before reverting to your normal quiet breathing once the nerve centres have refilled their prana reserves.',
+        'MEMORISE THIS RHYTHM — you will need only a few days, probably no more than two weeks.',
+        'PRACTICE: Sit with spine, neck, and head in a straight line. Interlock your fingers and rest them in your lap. Cross your ankles. Close your eyes.',
+        'Visualise a swing of any shape swinging evenly — each arc is one inhale, each return arc is one exhale.',
+        'Breathe following the pendulum, inhaling and exhaling in your golden rhythm.',
+        'Practice once daily for a few minutes, always before eating.',
+      ],
+      warning: 'If you feel a headache or faintness within 1–2 minutes of starting, you have not found the correct rhythm. Rest a few minutes then retry slightly slower or slightly faster.',
+      visualization: 'Eyes closed, see a swing before you. Each forward arc is an inhale, each return arc an exhale. Your breathing follows the pendulum smoothly.\n\nAs you practice you will feel a strange trembling through the whole body — as if a weak electrical current passes through you. Most clearly felt in the lips, fingertips, eyelids, tongue tip, nose tip, and solar plexus.\n\nThis is not subjective illusion — observers can see the eyelids physically trembling at great speed. It is a reliable sign that you have found your golden rhythm.',
+    }
+  },
+  {
+    id: 'bones',
+    title: 'Breathing Through the Bones',
+    subtitle: 'Breathing through the bones',
+    level: 'Advanced',
+    duration: 'Once per 7 days max',
+    categories: ['advanced','visualization'],
+    color: '#2080a0',
+    ratio: 'Free rhythm · full body',
+    session: { mode: 'triangle', inhale: 4, hold: 4, exhale: 4 },
+    tags: ['chakras', 'vitalization', 'advanced', 'rare'],
+    shortDesc: 'Prana is visualized as red light penetrating every cell and exiting through the legs. Then directed through arms, forehead, plexus, and each of the seven chakras in succession.',
+    detail: {
+      purpose: 'Permeates every cell with prana, cleans and vitalises the nervous system, and gently activates the chakras in a completely safe manner.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — red prana fills entire body', count: 'rhythmic' },
+        { type: 'hold',   label: 'Retain — prana saturates every cell', count: 'rhythmic' },
+        { type: 'exhale', label: 'Exhale — flows out through legs', count: 'rhythmic' },
+      ],
+      steps: [
+        'Prerequisites: 3–4 months of regular pranayama practice, plus some progress in the concentration exercises.',
+        'Lie on a carpet or firm surface. Sitting is not suitable. The nose must be fully clear.',
+        'Breathe rhythmically for 1–2 minutes.',
+        'Add the mental image: on inhale, luminous scarlet-red prana fills the entire body; during retention it permeates every cell; on exhale it exits through the legs.',
+        'Use vivid red light in all three phases.',
+        'After completing the leg sequence, redirect to the arms, then the forehead, then the solar plexus.',
+        'Finally, direct successively (not simultaneously) to each of the seven chakras: Muladhara (base), Svadisthana (sacral), Manipura (solar plexus), Anahata (heart), Visuddha (throat), Adjna (third eye), Sahasrara (crown).',
+        'Concentration and breathing together should take no more than a few minutes.',
+        'Practice no more than once every seven days.',
+      ],
+      warning: null,
+      visualization: 'Scarlet-red prana fills every cell on inhale. During retention it radiates inward to the very bones. On exhale it drains out through the soles of the feet like flowing light.\n\nThen direct the same process through the hands, then the face, then each chakra in ascending order along the spine.',
+    }
+  },
+  {
+    id: 'transmutation',
+    title: 'Sexual Energy Transmutation',
+    subtitle: 'Sexual energy transmutation',
+    level: 'Advanced',
+    duration: 'On demand',
+    categories: ['advanced','visualization'],
+    color: '#804020',
+    ratio: 'Rhythmic · as needed',
+    session: { mode: 'triangle', inhale: 4, hold: 4, exhale: 4 },
+    tags: ['transmutation', 'sublimation', 'solar plexus', 'creative energy'],
+    shortDesc: 'Breathing with visualization that draws sexual energy upward to the solar plexus, transforming it into vitality, endurance, and mental concentration.',
+    detail: {
+      purpose: 'Sexual energy is highly concentrated prana. Transformed by this method it becomes vitality, endurance, persistence, and mental force. Not performed on a schedule — only when the need for control arises.',
+      phases: [
+        { type: 'inhale', label: 'Inhale — draw energy upward from genital region', count: 'rhythmic 1–2 min' },
+        { type: 'hold',   label: 'Retain — energy gathers in solar plexus', count: 'retain' },
+        { type: 'exhale', label: 'Exhale — release erotic thoughts as grey smoke', count: 'complete exhale' },
+      ],
+      steps: [
+        'Take your usual posture with spine erect. Breathe rhythmically for 1–2 minutes.',
+        'Then add the following mental image to the rhythm:',
+        'ON INHALE: Imagine drawing the sexual energy up from the genital region toward the solar plexus. See it as a milky-white colour, like mist or steam. Try to physically feel a slight resistance as you draw it.',
+        'Say silently to yourself: "I am now drawing the sexual energy into the solar plexus."',
+        'DURING RETENTION: Suggestion — "Sexual energy is gathering in the solar plexus." Visualise the white mist concentrating into a radiant sphere at the plexus.',
+        'ON EXHALE: Say silently — "I am now removing erotic thoughts from myself." Force all air completely out. Visualise grey or black smoke leaving — something unwholesome departing the body.',
+        'A person engaged in intellectual work will quickly verify the effectiveness: not only unobstructed work, but noticeably increased capacity and power of concentration.',
+        'Normal for the head to incline slightly forward and downward during this exercise.',
+      ],
+      warning: null,
+      visualization: 'Inhale: milky-white mist rises from the base of the body toward the solar plexus. It has a faint weight and drag.\n\nRetention: the white cloud condenses into a glowing sphere of light at the solar plexus.\n\nExhale: grey or black smoke exits through the nose — old tension, unwanted impulse, leaving for good.',
+    }
+  },
+];
+
+let activeRecipeId = null;
+
+// ─── RENDER ─────────────────────────────────────────────
+function getPhaseClass(type) {
+  return { inhale:'phase-inhale', hold:'phase-hold', exhale:'phase-exhale', empty:'phase-empty' }[type];
+}
+
+function renderCard(r) {
+  return `
+  <div class="card" data-id="${r.id}" data-cats="${r.categories.join(',')}" onclick="openModal('${r.id}')">
+    <div class="card-banner" style="background:${r.color}"></div>
+    <div class="card-body">
+      <div class="card-meta">
+        <span class="card-level">${r.level}</span>
+        <span class="card-duration">⏱ ${r.duration}</span>
+      </div>
+      <div class="card-title">${r.title}</div>
+      <div class="card-subtitle">${r.subtitle}</div>
+      <div class="card-desc">${r.shortDesc}</div>
+      <div class="card-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+    <div class="card-footer">
+      <span class="ratio-display">${r.ratio}</span>
+      <button class="start-btn" onclick="event.stopPropagation();openModal('${r.id}')">View recipe</button>
+    </div>
+  </div>`;
+}
+
+document.getElementById('grid').innerHTML = RECIPES.map(renderCard).join('');
+
+// ─── FILTER ─────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.card').forEach(card => {
+      const cats = card.dataset.cats.split(',');
+      card.classList.toggle('hidden', f !== 'all' && !cats.includes(f));
+    });
+  });
+});
+
+// ─── MODAL ──────────────────────────────────────────────
+function openModal(id) {
+  activeRecipeId = id;
+  const r = RECIPES.find(x => x.id === id);
+  const d = r.detail;
+  document.getElementById('modal-banner').style.background = r.color;
+  document.getElementById('modal-title').textContent = r.title;
+  document.getElementById('modal-sub').textContent = r.subtitle + ' · ' + r.level;
+
+  let html = '';
+
+  // Stats
+  html += `<div class="modal-section">
+    <div class="stat-row">
+      <div class="stat-pill">Duration <strong>${r.duration}</strong></div>
+      <div class="stat-pill">Ratio <strong>${r.ratio}</strong></div>
+    </div>
+  </div>`;
+
+  // Purpose
+  html += `<div class="modal-section">
+    <h3>Purpose</h3>
+    <p>${d.purpose}</p>
+  </div>`;
+
+  // Phases
+  if (d.phases && d.phases.length) {
+    html += `<div class="modal-section"><h3>Breath Phases</h3><div class="phases">`;
+    d.phases.forEach((p, i) => {
+      html += `<div class="phase">
+        <div class="phase-num ${getPhaseClass(p.type)}">${i+1}</div>
+        <div class="phase-label">${p.label}</div>
+        <div class="phase-count">${p.count}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Warning
+  if (d.warning) {
+    html += `<div class="modal-section">
+      <div class="warning">⚠ ${d.warning}</div>
+    </div>`;
+  }
+
+  // Visualization
+  if (d.visualization) {
+    html += `<div class="modal-section">
+      <h3>Visualization (Drishti)</h3>
+      <div class="visualization-block">${d.visualization.replace(/\n/g,'<br><br>')}</div>
+    </div>`;
+  }
+
+  // Steps
+  if (d.steps && d.steps.length) {
+    html += `<div class="modal-section"><h3>Instructions</h3><div class="steps">`;
+    d.steps.forEach((s, i) => {
+      html += `<div class="step"><div class="step-n">${i+1}</div><div>${s}</div></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('open');
+  activeRecipeId = null;
+}
+
+function addToSession() {
+  if (!activeRecipeId) return;
+  const r = RECIPES.find(x => x.id === activeRecipeId);
+  if (!r || !r.session) return;
+  sessionStorage.setItem('pranaRecipe', JSON.stringify({ ...r.session, name: r.title }));
+  window.location.href = 'index.html';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('overlay')) closeOverlay();
+}
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeOverlay(); });
+</script>
+</body>
+</html>

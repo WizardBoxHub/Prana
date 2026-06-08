@@ -306,6 +306,36 @@ canvas { display: block; }
   transform: scale(0.92);
 }
 
+.recipes-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.recipes-btn {
+  font-family: 'Fraunces', serif;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(251,255,184,0.75);
+  background: linear-gradient(180deg, rgba(251,255,184,0.08) 0%, rgba(251,255,184,0.02) 100%);
+  border: none;
+  border-radius: 4px;
+  padding: 10px 24px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow:
+    0 1px 0 rgba(251,255,184,0.12) inset,
+    0 -1px 0 rgba(0,0,0,0.25) inset,
+    0 3px 12px rgba(0,0,0,0.28);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.recipes-btn:active {
+  transform: translateY(1px);
+}
+
 @media (max-width: 520px) {
   body {
     padding: 18px 16px 40px;
@@ -491,6 +521,10 @@ canvas { display: block; }
   </div>
 </div>
 
+<div class="recipes-wrap collapsible" id="recipesWrap">
+  <a class="recipes-btn" href="breathe_recipes.html">Breathing recipes</a>
+</div>
+
 <div class="session-timer" id="sessionTimer"></div>
 
 <script>
@@ -503,6 +537,7 @@ const sliderWrap = document.getElementById('sliderWrap');
 const modeSelect = document.getElementById('modeSelect');
 const sessionTimer = document.getElementById('sessionTimer');
 const soundToggle = document.getElementById('soundToggle');
+const recipesWrap = document.getElementById('recipesWrap');
 const soundThumb = document.getElementById('soundThumb');
 
 let mode = 'line', playing = false, animId = null, startTime = null, sessionStart = null, timerInterval = null;
@@ -703,6 +738,7 @@ function togglePlay() {
     hideCollapsible(sliderWrap);
     hideCollapsible(modeSelect);
     hideCollapsible(soundToggle);
+    hideCollapsible(recipesWrap);
     playbtn.textContent = 'Stop';
     playbtn.classList.add('active');
     lastPhase = null;
@@ -742,6 +778,7 @@ function togglePlay() {
     showCollapsible(sliderWrap);
     showCollapsible(modeSelect);
     showCollapsible(soundToggle);
+    showCollapsible(recipesWrap);
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     lastPhase = null;
@@ -760,8 +797,30 @@ function togglePlay() {
 function setMode(m, el) {
   mode = m;
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
+  else {
+    const idx = { line: 0, triangle: 1, square: 2 }[m];
+    document.querySelectorAll('.mode-card')[idx]?.classList.add('active');
+  }
   renderSliders(); draw(0);
+}
+
+function applySessionConfig(config) {
+  if (!config || !config.mode) return;
+  if (config.inhale) times.inhale = config.inhale;
+  if (config.hold) times.hold = config.hold;
+  if (config.exhale) times.exhale = config.exhale;
+  if (config.hold2) times.hold2 = config.hold2;
+  setMode(config.mode);
+}
+
+function loadRecipeFromStorage() {
+  try {
+    const raw = sessionStorage.getItem('pranaRecipe');
+    if (!raw) return;
+    sessionStorage.removeItem('pranaRecipe');
+    applySessionConfig(JSON.parse(raw));
+  } catch (_) {}
 }
 
 function renderSliders() {
@@ -793,6 +852,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 renderSliders();
 resizeCanvas();
+loadRecipeFromStorage();
 </script>
 </body>
 </html>

@@ -630,11 +630,11 @@ function playVoiceMobile(phase) {
 }
 
 function playVoice(phase) {
-  if (isMobileVoice() && audioCtx) {
+  const key = phase === 'hold2' ? 'hold' : phase;
+  if (isMobileVoice() && audioCtx && voiceBuffers[key]) {
     playVoiceMobile(phase);
     return;
   }
-  const key = phase === 'hold2' ? 'hold' : phase;
   const clip = voiceClips[key];
   if (!clip) return;
   Object.values(voiceClips).forEach(c => {
@@ -750,12 +750,25 @@ function showCollapsible(el) {
 
 function setSoundMode(m, el) {
   soundMode = m;
+  sessionStorage.setItem('pranaSound', m);
   document.querySelectorAll('.sound-opt').forEach(btn => {
     const on = btn === el;
     btn.classList.toggle('active', on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
   soundThumb.style.transform = `translateX(${soundIndex[m] * 100}%)`;
+  if (m === 'mouth' && isMobileVoice()) initMobileVoice().catch(() => {});
+  if (m === 'snap') {
+    snapClip.volume = 0;
+    snapClip.play().then(() => { snapClip.pause(); snapClip.currentTime = 0; snapClip.volume = 1; }).catch(() => { snapClip.volume = 1; });
+  }
+}
+
+function restoreSoundMode() {
+  const m = sessionStorage.getItem('pranaSound');
+  if (!m || m === 'none') return;
+  const btn = document.querySelector(`.sound-opt[data-sound="${m}"]`);
+  if (btn) setSoundMode(m, btn);
 }
 
 function togglePlay() {
@@ -785,7 +798,12 @@ function togglePlay() {
           playVoice('inhale');
           lastPhase = 'inhale';
           startLoop();
-        }).catch(() => startLoop());
+        }).catch(() => {
+          if (!playing) return;
+          playVoice('inhale');
+          lastPhase = 'inhale';
+          startLoop();
+        });
       } else {
         playVoice('inhale');
         lastPhase = 'inhale';
@@ -878,6 +896,7 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 renderSliders();
 resizeCanvas();
+restoreSoundMode();
 loadRecipeFromStorage();
 </script>
 </body>

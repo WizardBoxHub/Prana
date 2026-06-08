@@ -588,8 +588,7 @@ function isMobileVoice() {
 }
 
 async function initMobileVoice() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  await ensureAudioCtx();
   await Promise.all(Object.entries(voiceFiles).map(async ([key, url]) => {
     if (voiceBuffers[key]) return;
     const res = await fetch(url);
@@ -599,11 +598,64 @@ async function initMobileVoice() {
 
 const snapClip = new Audio('CLICK.mp3');
 snapClip.preload = 'auto';
+let snapBuffer = null;
+let snapScheduleId = 0;
+let snapRescheduleTimer = null;
+const SNAP_LEAD = 0.05;
 
-function playSnap() {
+async function ensureAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+}
+
+async function initSnapAudio() {
+  await ensureAudioCtx();
+  if (snapBuffer) return;
+  const res = await fetch('CLICK.mp3');
+  snapBuffer = await audioCtx.decodeAudioData(await res.arrayBuffer());
+}
+
+function playSnapFallback() {
   snapClip.pause();
   snapClip.currentTime = 0;
   snapClip.play().catch(() => {});
+}
+
+function cancelSnapSchedule() {
+  snapScheduleId++;
+  if (snapRescheduleTimer) {
+    clearTimeout(snapRescheduleTimer);
+    snapRescheduleTimer = null;
+  }
+}
+
+function scheduleSnapSounds() {
+  if (soundMode !== 'snap' || !playing) return;
+  if (!audioCtx || !snapBuffer) {
+    playSnapFallback();
+    return;
+  }
+  const id = ++snapScheduleId;
+  const phases = modePhases[mode];
+  const cycleDur = total();
+  const base = audioCtx.currentTime;
+
+  for (let c = 0; c < 4; c++) {
+    let t = 0;
+    for (const p of phases) {
+      const when = Math.max(audioCtx.currentTime, base + c * cycleDur + t - SNAP_LEAD);
+      const src = audioCtx.createBufferSource();
+      src.buffer = snapBuffer;
+      src.connect(audioCtx.destination);
+      try { src.start(when); } catch (_) {}
+      t += times[p];
+    }
+  }
+
+  snapRescheduleTimer = setTimeout(() => {
+    if (id !== snapScheduleId || !playing || soundMode !== 'snap') return;
+    scheduleSnapSounds();
+  }, Math.max(200, (cycleDur * 2 - 0.25) * 1000));
 }
 
 function stopAllVoice() {
@@ -649,7 +701,6 @@ function playPhaseSound(phase) {
   if (!playing || phase === lastPhase) return;
   lastPhase = phase;
   if (soundMode === 'mouth') playVoice(phase);
-  else if (soundMode === 'snap') playSnap();
 }
 const times = { inhale: 4, hold: 4, exhale: 4, hold2: 4 };
 const modePhases = {
@@ -758,10 +809,7 @@ function setSoundMode(m, el) {
   });
   soundThumb.style.transform = `translateX(${soundIndex[m] * 100}%)`;
   if (m === 'mouth' && isMobileVoice()) initMobileVoice().catch(() => {});
-  if (m === 'snap') {
-    snapClip.volume = 0;
-    snapClip.play().then(() => { snapClip.pause(); snapClip.currentTime = 0; snapClip.volume = 1; }).catch(() => { snapClip.volume = 1; });
-  }
+  if (m === 'snap') initSnapAudio().catch(() => {});
 }
 
 function restoreSoundMode() {
@@ -810,9 +858,17 @@ function togglePlay() {
         startLoop();
       }
     } else if (soundMode === 'snap') {
-      playSnap();
-      lastPhase = modePhases[mode][0];
-      startLoop();
+      initSnapAudio().then(() => {
+        if (!playing) return;
+        scheduleSnapSounds();
+        lastPhase = modePhases[mode][0];
+        startLoop();
+      }).catch(() => {
+        if (!playing) return;
+        playSnapFallback();
+        lastPhase = modePhases[mode][0];
+        startLoop();
+      });
     } else {
       startLoop();
     }
@@ -826,6 +882,7 @@ function togglePlay() {
     playbtn.textContent = 'Start';
     playbtn.classList.remove('active');
     lastPhase = null;
+    cancelSnapSchedule();
     stopAllVoice();
     snapClip.pause();
     snapClip.currentTime = 0;
